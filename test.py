@@ -2,8 +2,6 @@ import datetime
 from datetime import timedelta
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
 
 Data = pd.read_csv(r'./usdjpy.csv')
 Data['Datetime'] = pd.to_datetime(Data.time)
@@ -36,3 +34,23 @@ for DT in Data.Date.drop_duplicates():
 
 DF = pd.DataFrame(DDD,columns=['Date','High','Low'])
 DF.to_csv(r'./usdjpy_data.csv',index=False)
+
+P_SMA = [5,25,75]
+Result = []
+Columns = []
+
+for i in range(DF.shape[0]):
+    R_Sub = []
+    for p in P_SMA:
+        if i<(p-1):
+            R_Sub += [None,None]
+            if i == 0:
+                Columns += ['High_'+str(p),'Low_'+str(p)]
+        else:
+            R_Sub += [np.round(DF.High[(i-p+1):(i+1)].mean(),4), np.round(DF.Low[(i-p+1):(i+1)].mean(),4)]
+
+    Result += [R_Sub]
+
+DF = pd.concat([DF,pd.DataFrame(Result,columns=Columns)],axis=1)
+
+DF.to_csv(r'./usdjpy_sma.csv',index=False)
